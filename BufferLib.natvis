@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="BufferLib::array_buffer&lt;*&gt;">
+		<DisplayString>{{ capacity={m_capacity}, read_available={m_write_index - m_read_index}, write_available={m_capacity-m_write_index} }}</DisplayString>
+	</Type>
+</AutoVisualizer>
