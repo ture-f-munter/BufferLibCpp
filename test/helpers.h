@@ -9,8 +9,8 @@
 
 #include "array_buffer.h"
 
-template<int TCapacity>
-void printbuffer(BufferLib::array_buffer<TCapacity>& buf, const std::string& heading)
+template<typename TStorageDataType, int TCapacity>
+void printbuffer(BufferLib::array_buffer<TStorageDataType, TCapacity>& buf, const std::string& heading)
 {
 	std::cout << std::endl;
 	std::cout << "=== " << heading << " ===" << std::endl;

@@ -1,6 +1,6 @@
 // Copyright (c) 2023 Ture Fronczek-Munter
 //
-// This file is part of the BufferLib library
+// This file is part of the BufferLibCpp library
 // Please visit: https://github.com/ture-f-munter/BufferLibCpp
 //
 // MIT License

@@ -1,6 +1,6 @@
 // Copyright (c) 2023 Ture Fronczek-Munter
 //
-// This file is part of the BufferLib library
+// This file is part of the BufferLibCpp library
 // Please visit: https://github.com/ture-f-munter/BufferLibCpp
 //
 // MIT License
@@ -12,15 +12,18 @@
 #include <iomanip>
 #include <ios>
 #include <string>
+#include <stdint.h>
+#include <type_traits>
 
 namespace BufferLib
 {
-    template<int TCapacity = 512>
+    template<typename TStorageDataType = std::uint8_t, int TCapacity = 512>
     class array_buffer
     {
-        typedef std::uint8_t Storage_DataType;
-        typedef std::array<Storage_DataType, TCapacity> Storage_Container;
-        typedef typename Storage_Container::size_type size_type_t;
+        typedef TStorageDataType Storage_DataType;
+        typedef std::array<TStorageDataType, TCapacity> Storage_Container;
+        //typedef typename Storage_Container::size_type size_type_t;
+        typedef int size_type_t;
 
     public:
         array_buffer();
@@ -50,35 +53,37 @@ namespace BufferLib
         size_type_t m_min_free;                     // Minimum free bytes in buffer before a relocation of remaining data.
     };
 
-    template<int TCapacity>
-    array_buffer<TCapacity>::array_buffer()
+    template<typename TStorageDataType, int TCapacity>
+    array_buffer<TStorageDataType, TCapacity>::array_buffer()
         : m_read_index(0)
         , m_write_index(0)
         , m_min_free(TCapacity / 4)
     {
-        memset(&m_buf[0], 0, TCapacity);
+        static_assert(std::is_arithmetic_v<TStorageDataType>, "TStorageDataType is not an arithmetic type");
+
+        memset(&m_buf[0], 0, TCapacity * sizeof(TStorageDataType));
     }
 
-    template<int TCapacity>
-    constexpr typename array_buffer<TCapacity>::size_type_t array_buffer<TCapacity>::capacity() const noexcept
+    template<typename TStorageDataType, int TCapacity>
+    constexpr typename array_buffer<TStorageDataType, TCapacity>::size_type_t array_buffer<TStorageDataType, TCapacity>::capacity() const noexcept
     {
         return m_buf.size();
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::size_type_t array_buffer<TCapacity>::size() const noexcept
+    template<typename TStorageDataType, int TCapacity>
+    typename array_buffer<TStorageDataType, TCapacity>::size_type_t array_buffer<TStorageDataType, TCapacity>::size() const noexcept
     {
         return m_write_index - m_read_index;
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::size_type_t array_buffer<TCapacity>::free_size() const noexcept
+    template<typename TStorageDataType, int TCapacity>
+    typename array_buffer<TStorageDataType, TCapacity>::size_type_t array_buffer<TStorageDataType, TCapacity>::free_size() const noexcept
     {
         return capacity() - m_write_index;
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::size_type_t array_buffer<TCapacity>::set_min_free(size_type_t n_elem) noexcept
+    template<typename TStorageDataType, int TCapacity>
+    typename array_buffer<TStorageDataType, TCapacity>::size_type_t array_buffer<TStorageDataType, TCapacity>::set_min_free(size_type_t n_elem) noexcept
     {
         if (n_elem > (TCapacity / 2))
         {
@@ -91,8 +96,8 @@ namespace BufferLib
         return m_min_free;
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::size_type_t  array_buffer<TCapacity>::consume(size_type_t n_elem) noexcept
+    template<typename TStorageDataType, int TCapacity>
+    typename array_buffer<TStorageDataType, TCapacity>::size_type_t  array_buffer<TStorageDataType, TCapacity>::consume(size_type_t n_elem) noexcept
     {
         if (m_read_index + n_elem > capacity())
         {
@@ -116,8 +121,8 @@ namespace BufferLib
         return n_elem;
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::size_type_t  array_buffer<TCapacity>::commit(size_type_t n_elem) noexcept
+    template<typename TStorageDataType, int TCapacity>
+    typename array_buffer<TStorageDataType, TCapacity>::size_type_t  array_buffer<TStorageDataType, TCapacity>::commit(size_type_t n_elem) noexcept
     {
         if (n_elem > free_size())
         {
@@ -135,32 +140,32 @@ namespace BufferLib
         return n_elem;
     }
 
-    template<int TCapacity>
-    const typename array_buffer<TCapacity>::Storage_DataType* array_buffer<TCapacity>::read_ptr() const noexcept
+    template<typename TStorageDataType, int TCapacity>
+    const TStorageDataType* array_buffer<TStorageDataType, TCapacity>::read_ptr() const noexcept
     {
         return &m_buf[m_read_index];
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::Storage_DataType* array_buffer<TCapacity>::write_ptr() noexcept
+    template<typename TStorageDataType, int TCapacity>
+    TStorageDataType* array_buffer<TStorageDataType, TCapacity>::write_ptr() noexcept
     {
         return &m_buf[m_write_index];
     }
 
-    template<int TCapacity>
-    typename array_buffer<TCapacity>::Storage_DataType* array_buffer<TCapacity>::raw_ptr() noexcept
+    template<typename TStorageDataType, int TCapacity>
+    TStorageDataType* array_buffer<TStorageDataType, TCapacity>::raw_ptr() noexcept
     {
         return &m_buf[0];
     }
 
-    template <int TCapacity>
-    const typename array_buffer<TCapacity>::Storage_DataType* array_buffer<TCapacity>::const_raw_ptr() const noexcept
+    template<typename TStorageDataType, int TCapacity>
+    const TStorageDataType* array_buffer<TStorageDataType, TCapacity>::const_raw_ptr() const noexcept
     {
         return &m_buf[0];
     }
 
-    template<int TCapacity>
-    void array_buffer<TCapacity>::relocate() noexcept
+    template<typename TStorageDataType, int TCapacity>
+    void array_buffer<TStorageDataType, TCapacity>::relocate() noexcept
     {
         if (free_size() > capacity() / 2)
         {
@@ -174,15 +179,25 @@ namespace BufferLib
         memset(&m_buf[m_write_index], 0, free_size());   // Clear rest of buffer
     }
 
-    template<int TCapacity>
-    void array_buffer<TCapacity>::to_stream(std::ostream& o) const noexcept
+    template<typename TStorageDataType, int TCapacity>
+    void array_buffer<TStorageDataType, TCapacity>::to_stream(std::ostream& o) const noexcept
     {
         const auto write_index = TCapacity - free_size();
         const auto read_index = write_index - size();
 
         for (size_type_t i = 0; i < TCapacity; ++i)
         {
-            o << std::setw(2 * sizeof(Storage_DataType)) << std::setfill('0') << std::hex << static_cast<int>(*(const_raw_ptr() + i));
+            if(std::is_integral_v<TStorageDataType>)
+            {
+                // Type is an integer type, write as hex
+                o << std::setw(2 * sizeof(Storage_DataType)) << std::setfill('0') << std::hex << static_cast<std::uint64_t>(*(const_raw_ptr() + i));    
+            }
+            else
+            {
+                // Type is not an integer type, call std::to_string()
+                o << std::setw(2 * sizeof(Storage_DataType)) << std::setfill('0') << std::hex << std::to_string(*(const_raw_ptr() + i));
+            }
+            
 
             if (i == read_index && i == write_index)
             {
@@ -208,8 +223,8 @@ namespace BufferLib
         }
     }
 
-    template<int TCapacity>
-    std::ostream& operator<< (std::ostream& o, const array_buffer<TCapacity>& buf)
+    template<typename TStorageDataType, int TCapacity>
+    std::ostream& operator<< (std::ostream& o, const array_buffer<TStorageDataType, TCapacity>& buf)
     {
         buf.to_stream(o);
         return o;

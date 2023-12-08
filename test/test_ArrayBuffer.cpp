@@ -1,6 +1,6 @@
 // Copyright (c) 2023 Ture Fronczek-Munter
 //
-// This file is part of the BufferLib library
+// This file is part of the BufferLibCpp library
 // Please visit: https://github.com/ture-f-munter/BufferLibCpp
 //
 // MIT License
@@ -9,11 +9,31 @@
 
 #include <gtest/gtest.h>
 
-TEST(ArrayBuffer, testCreate)
+TEST(ArrayBuffer, simple_create)
+{
+	constexpr int expected_buffer_size = 512;  // Default size if not specified
+
+	BufferLib::array_buffer buf;
+
+	EXPECT_EQ(expected_buffer_size, buf.capacity());   // Total capacity of buffer
+	EXPECT_EQ(expected_buffer_size, buf.free_size());  // Number of bytes free for writing in buffer
+	EXPECT_EQ(0, buf.size());   // Number of bytes ready for reading in buffer
+
+	EXPECT_EQ(buf.read_ptr(), buf.write_ptr());
+	EXPECT_EQ(buf.read_ptr(), buf.raw_ptr());
+
+	// Check that all elements are zero
+	for (int i = 0; i < buf.capacity(); ++i)
+	{
+		EXPECT_EQ(0, buf.raw_ptr()[i]);
+	}
+}
+
+TEST(ArrayBuffer, create_uint64_array)
 {
 	constexpr int buffer_size = 64;
 
-	BufferLib::array_buffer<64> buf;
+	BufferLib::array_buffer<std::uint8_t, 64> buf;
 
 	EXPECT_EQ(buffer_size, buf.capacity());   // Total capacity of buffer
 	EXPECT_EQ(buffer_size, buf.free_size());  // Number of bytes free for writing in buffer
@@ -29,9 +49,9 @@ TEST(ArrayBuffer, testCreate)
 	}
 }
 
-TEST(ArrayBuffer, testCommitAndConsume)
+TEST(ArrayBuffer, commit_and_consume)
 {
-	BufferLib::array_buffer<64> buf;
+	BufferLib::array_buffer<std::uint8_t, 64> buf;
 	buf.set_min_free(24);
 	
 	// ***** Commit elements
@@ -140,9 +160,9 @@ TEST(ArrayBuffer, testCommitAndConsume)
 }
 
 
-TEST(ArrayBuffer, testPrintout)
+TEST(ArrayBuffer, commit_and_consume_char_array)
 {
-	BufferLib::array_buffer<64> buf;
+	BufferLib::array_buffer<char, 64> buf;
 	buf.set_min_free(24);
 
 	printbuffer(buf, "BEFORE");
@@ -152,6 +172,174 @@ TEST(ArrayBuffer, testPrintout)
 	for (auto i = 0; i < n_elems_committed; ++i)
 	{
 		buf.raw_ptr()[i] = i;
+	}
+	buf.commit(n_elems_committed);
+
+	std::stringstream ss;
+	ss << std::to_string(n_elems_committed) << " ELEMENTS COMMITTED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_1 = 5ull;
+	buf.consume(n_elems_consumed_1);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_1) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_2 = buf.free_size() / 2;
+	buf.consume(n_elems_consumed_2);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_2) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const std::uint64_t n_elems_consumed_3 = buf.size() - 5;
+	buf.consume(n_elems_consumed_3);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_3) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+}
+
+
+TEST(ArrayBuffer, commit_and_consume_uint8_array)
+{
+	BufferLib::array_buffer<std::uint8_t, 64> buf;
+	buf.set_min_free(24);
+
+	printbuffer(buf, "BEFORE");
+
+	// Commit elements
+	const int n_elems_committed = 42;
+	for (auto i = 0; i < n_elems_committed; ++i)
+	{
+		buf.raw_ptr()[i] = i;
+	}
+	buf.commit(n_elems_committed);
+
+	std::stringstream ss;
+	ss << std::to_string(n_elems_committed) << " ELEMENTS COMMITTED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_1 = 5ull;
+	buf.consume(n_elems_consumed_1);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_1) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_2 = buf.free_size() / 2;
+	buf.consume(n_elems_consumed_2);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_2) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const std::uint64_t n_elems_consumed_3 = buf.size() - 5;
+	buf.consume(n_elems_consumed_3);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_3) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+}
+
+
+TEST(ArrayBuffer, commit_and_consume_uint16_array)
+{
+	BufferLib::array_buffer<std::uint16_t, 64> buf;
+	buf.set_min_free(24);
+
+	printbuffer(buf, "BEFORE");
+
+	// Commit elements
+	const int n_elems_committed = 42;
+	for (auto i = 0; i < n_elems_committed; ++i)
+	{
+		buf.raw_ptr()[i] = i;
+	}
+	buf.commit(n_elems_committed);
+
+	std::stringstream ss;
+	ss << std::to_string(n_elems_committed) << " ELEMENTS COMMITTED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_1 = 5ull;
+	buf.consume(n_elems_consumed_1);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_1) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_2 = buf.free_size() / 2;
+	buf.consume(n_elems_consumed_2);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_2) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const std::uint64_t n_elems_consumed_3 = buf.size() - 5;
+	buf.consume(n_elems_consumed_3);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_3) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+}
+
+
+TEST(ArrayBuffer, commit_and_consume_int64_array)
+{
+	BufferLib::array_buffer<std::int64_t, 64> buf;
+	buf.set_min_free(24);
+
+	printbuffer(buf, "BEFORE");
+
+	// Commit elements
+	const int n_elems_committed = 42;
+	for (auto i = 0; i < n_elems_committed; ++i)
+	{
+		buf.raw_ptr()[i] = i;
+	}
+	buf.commit(n_elems_committed);
+
+	std::stringstream ss;
+	ss << std::to_string(n_elems_committed) << " ELEMENTS COMMITTED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_1 = 5ull;
+	buf.consume(n_elems_consumed_1);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_1) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const auto n_elems_consumed_2 = buf.free_size() / 2;
+	buf.consume(n_elems_consumed_2);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_2) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+
+	// Consume elements
+	const std::uint64_t n_elems_consumed_3 = buf.size() - 5;
+	buf.consume(n_elems_consumed_3);
+	ss.str(""); // Clear stringstream
+	ss << std::to_string(n_elems_consumed_3) << " ELEMENTS CONSUMED";
+	printbuffer(buf, ss.str());
+}
+
+
+TEST(ArrayBuffer, commit_and_consume_double_array)
+{
+	BufferLib::array_buffer<double, 64> buf;
+	buf.set_min_free(24);
+
+	printbuffer(buf, "BEFORE");
+
+	// Commit elements
+	const int n_elems_committed = 42;
+	for (auto i = 0; i < n_elems_committed; ++i)
+	{
+		buf.raw_ptr()[i] = i * 0.01243;
 	}
 	buf.commit(n_elems_committed);
 
